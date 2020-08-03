@@ -1,26 +1,29 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import {Provider} from "react-redux";
+import {combineReducers, createStore} from "redux";
+import {BrowserRouter} from "react-router-dom";
+import {Redirect, Route, Switch} from "react-router";
+import Auth from "./auth/Auth";
+
+const store = createStore(combineReducers({}))
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    return (
+        <Provider store={store}>
+            <BrowserRouter>
+                <Switch>
+                    <Route path='/auth' component={Auth}/>
+                    <Route path='/ajouter-virement-multiple' render={() => <p>ajouter-virement-multiple</p>}/>
+                    <Route path='/verification' render={() => <p>verification</p>}/>
+                    <Route path='/results' render={() => <p>results</p>}/>
+                    <Route path='/list-virements' render={() => <p>list-virements</p>}/>
+                    <Redirect to='/auth'/>
+                </Switch>
+            </BrowserRouter>
+
+        </Provider>
+    );
 }
 
 export default App;
