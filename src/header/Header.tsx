@@ -9,10 +9,11 @@ const Header = (props: any) => {
         <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
             <Navbar.Brand href=""><img width="100px" src={iconPath} alt="Logo"/></Navbar.Brand>
             <Navbar.Collapse id="responsive-navbar-nav">
-                <Nav className="mr-auto">
-                    <Nav.Link onClick={() => {
-                        history.push('/ajouter-virement-multiple')
-                    }}>Ajouter Virement</Nav.Link>
+                <Nav className="mr-auto" activeKey={history.location.pathname}>
+                    <Nav.Link
+                        onClick={() => {
+                            history.push('/ajouter-virement')
+                        }}>Ajouter Virement</Nav.Link>
                     <Nav.Link onClick={() => {
                         history.push('/list-virements')
                     }}>List Virements</Nav.Link>
