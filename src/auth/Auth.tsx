@@ -14,8 +14,14 @@ const Auth = () => {
 
     const onSubmit = (data: IFormInput) => {
         console.log(data)
-        http.post('login', data).then(results => {
+        http.post('/login', data, {}).then(results => {
             console.log(results)
+            const config = {
+                headers: {Authorization: `${results.headers.authorization}`}
+            };
+            http.get('abonnes', config).then(l3ilm => {
+                console.log('data ', l3ilm.data._embedded.abonnes)
+            })
         }).catch((error) => {
             console.log(error);
         })
