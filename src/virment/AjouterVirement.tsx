@@ -1,6 +1,8 @@
-import React, {ChangeEvent, Fragment, useState} from 'react';
+import React, {ChangeEvent, Fragment, useEffect, useState} from 'react';
 import {Alert, Button, Col, Form, FormControl, InputGroup, Row, Table} from "react-bootstrap";
 import {useForm} from "react-hook-form";
+
+import http from '../client'
 
 type Beneficiaire = {
     id: number,
@@ -14,6 +16,12 @@ type SelectedBeneficiaire = {
     nom: string,
     prenom: string,
     montant: number
+}
+type Compte = {
+    id: number,
+    intitule: string
+    numeroCompte: string
+    soldeComptable: number
 }
 
 
@@ -112,7 +120,13 @@ export const VirementForm = (props: any) => {
                     <Form.Label>Choisir un compte :</Form.Label>
                     <Form.Control as="select"
                                   name="accountNumber" ref={register({required: true})}>
-                        <option>213223412</option>
+                        {
+                            props.state.comptes.map((e: Compte) => {
+                                return <option key={e.id}
+                                               value={e.numeroCompte}>{e.numeroCompte + ' : (' + e.soldeComptable} DH)
+                                </option>
+                            })
+                        }
                     </Form.Control>
                     {
                         (errors.accountNumber?.type === 'required') ?
@@ -214,23 +228,51 @@ export const VirementForm = (props: any) => {
 
 const AjouterVirment = () => {
     const selectedBeneficiaire: SelectedBeneficiaire[] = [];
-    const beneficiaire: Beneficiaire[] = [
-        {
-            prenom: "Ayman", nom: 'nait', numeroCompte: 1231232, id: 1
-        },
-        {
-            prenom: "qd", nom: 'qd', numeroCompte: 12312332, id: 12
-        }
-    ];
+    const beneficiaire: Beneficiaire[] = [];
+    const comptes: Compte[] = [];
     const
         [state, setState] = useState({
             beneficiaire: beneficiaire,
             selectedBeneficiaire: selectedBeneficiaire,
             montant: 0,
-            comptes: [],
-            formValid: false,
+            comptes: comptes,
 
         });
+    useEffect(() => {
+        console.log("Component mount");
+        const config = {
+            headers: {Authorization: "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhbmMiLCJleHAiOjE1OTc0ODc3MzYsInJvbGVzIjpbXX0.x-tIMqHGBLJHLRZr8GYIisABGIHbaDgFXlSDhP6NEZgSXPbGewwPalEzuG1m27fMVFeWOP3H3l7AWLgm63DWsw"}
+        };
+        http.get('/abonnes/2/beneficiaires', config).then(beneficiaire => {
+            console.log(beneficiaire.data._embedded.beneficiaires)
+            const bns: Beneficiaire[] = [];
+            (beneficiaire.data._embedded.beneficiaires as Beneficiaire[]).forEach(e => {
+                bns.push({
+                    prenom: e.prenom, nom: e.nom, id: e.id, numeroCompte: e.numeroCompte
+                })
+            })
+            setState({
+                ...state, beneficiaire: bns
+            })
+        });
+    }, [])
+    useEffect(() => {
+        console.log("Component mount");
+        const config = {
+            headers: {Authorization: "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhbmMiLCJleHAiOjE1OTc0ODc3MzYsInJvbGVzIjpbXX0.x-tIMqHGBLJHLRZr8GYIisABGIHbaDgFXlSDhP6NEZgSXPbGewwPalEzuG1m27fMVFeWOP3H3l7AWLgm63DWsw"}
+        };
+        http.get('/abonnes/1/comptes', config).then(accounts => {
+            const comptes: Compte[] = [];
+            (accounts.data._embedded.comptes as Compte[]).forEach(e => {
+                comptes.push({
+                    id: e.id, intitule: e.intitule, numeroCompte: e.numeroCompte, soldeComptable: e.soldeComptable
+                })
+            })
+            setState({
+                ...state, comptes: comptes
+            })
+        });
+    })
     const addBeneficiaire = (data: Beneficiaire) => {
         if (!state.selectedBeneficiaire.some(selectedBeneficiaire => selectedBeneficiaire.id === data.id)) {
             setState({

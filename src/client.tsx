@@ -1,6 +1,4 @@
 import axios from "axios"
-
-// export const api_url = "https://randomuser.me/api/"
 export const api_url = "http://localhost:8080/"
 
 export default axios.create({
