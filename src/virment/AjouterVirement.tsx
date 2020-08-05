@@ -54,14 +54,10 @@ export const ListBeneficiaires = (props: { beneficiaires: Beneficiaire[], addBen
         </Table>
     )
 }
-export const BeneficiairesVirement = (props: {
-    selectedBeneficiaire: SelectedBeneficiaire[],
-    removeBeneficiaire: Function, changeBeneficiaireValuer: Function
-}) => {
+export const BeneficiairesVirement = (props: { selectedBeneficiaire: SelectedBeneficiaire[], removeBeneficiaire: Function, changeBeneficiaireValuer: Function }) => {
     const changeHandler = (e: ChangeEvent<HTMLInputElement>) => {
         props.changeBeneficiaireValuer(e.target.name, e.target.value)
     }
-
     return <Table>
         <thead>
         <tr>
@@ -98,8 +94,6 @@ export const BeneficiairesVirement = (props: {
         </tbody>
     </Table>
 }
-
-
 export const VirementForm = (props: any) => {
     const {register, errors, handleSubmit} = useForm<any>();
     const onSubmit = (data: any) => {
@@ -110,7 +104,7 @@ export const VirementForm = (props: any) => {
             }
         })
         if (isValid) {
-            console.log(data)
+            console.log(data,props)
         }
     };
     return <Form onSubmit={handleSubmit(onSubmit)}>
@@ -225,7 +219,6 @@ export const VirementForm = (props: any) => {
     </Form>
 }
 
-
 const AjouterVirment = () => {
     const selectedBeneficiaire: SelectedBeneficiaire[] = [];
     const beneficiaire: Beneficiaire[] = [];
@@ -239,40 +232,27 @@ const AjouterVirment = () => {
 
         });
     useEffect(() => {
-        console.log("Component mount");
-        const config = {
-            headers: {Authorization: "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhbmMiLCJleHAiOjE1OTc0ODc3MzYsInJvbGVzIjpbXX0.x-tIMqHGBLJHLRZr8GYIisABGIHbaDgFXlSDhP6NEZgSXPbGewwPalEzuG1m27fMVFeWOP3H3l7AWLgm63DWsw"}
-        };
-        http.get('/abonnes/2/beneficiaires', config).then(beneficiaire => {
-            console.log(beneficiaire.data._embedded.beneficiaires)
-            const bns: Beneficiaire[] = [];
-            (beneficiaire.data._embedded.beneficiaires as Beneficiaire[]).forEach(e => {
-                bns.push({
-                    prenom: e.prenom, nom: e.nom, id: e.id, numeroCompte: e.numeroCompte
-                })
-            })
-            setState({
-                ...state, beneficiaire: bns
-            })
+        http.get('/abonnes/2/beneficiaires').then(response => {
+            setState(state => (
+                {
+                    ...state, beneficiaire: response.data._embedded.beneficiaires.map((e: Beneficiaire) => ({
+                        prenom: e.prenom, nom: e.nom, id: e.id, numeroCompte: e.numeroCompte
+                    }))
+                }
+            ))
         });
+        http.get('/abonnes/1/comptes').then(response => {
+            console.log(response)
+            setState(state => (
+                {
+                    ...state, comptes: response.data._embedded.comptes.map((e: Compte) => ({
+                        id: e.id, intitule: e.intitule, numeroCompte: e.numeroCompte, soldeComptable: e.soldeComptable
+                    }))
+                }
+            ))
+        });
+
     }, [])
-    useEffect(() => {
-        console.log("Component mount");
-        const config = {
-            headers: {Authorization: "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhbmMiLCJleHAiOjE1OTc0ODc3MzYsInJvbGVzIjpbXX0.x-tIMqHGBLJHLRZr8GYIisABGIHbaDgFXlSDhP6NEZgSXPbGewwPalEzuG1m27fMVFeWOP3H3l7AWLgm63DWsw"}
-        };
-        http.get('/abonnes/1/comptes', config).then(accounts => {
-            const comptes: Compte[] = [];
-            (accounts.data._embedded.comptes as Compte[]).forEach(e => {
-                comptes.push({
-                    id: e.id, intitule: e.intitule, numeroCompte: e.numeroCompte, soldeComptable: e.soldeComptable
-                })
-            })
-            setState({
-                ...state, comptes: comptes
-            })
-        });
-    })
     const addBeneficiaire = (data: Beneficiaire) => {
         if (!state.selectedBeneficiaire.some(selectedBeneficiaire => selectedBeneficiaire.id === data.id)) {
             setState({
