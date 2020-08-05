@@ -3,6 +3,7 @@ import {Alert, Button, Col, Form, FormControl, InputGroup, Row, Table} from "rea
 import {useForm} from "react-hook-form";
 
 import http from '../client'
+import {useHistory} from "react-router-dom";
 
 type Beneficiaire = {
     id: number,
@@ -78,7 +79,7 @@ export const BeneficiairesVirement = (props: { selectedBeneficiaire: SelectedBen
                             <input style={{borderColor: beneficiaire.montant ? '' : 'red'}}
                                    type="number" name={beneficiaire.id.toString()}
                                    value={beneficiaire.montant}
-                                   onChange={changeHandler}/> DH
+                                   onChange={changeHandler}/>
                             {
                                 (beneficiaire.montant <= 0) ?
                                     <Alert className='mt-2' variant="danger">Valeur doit être non nulle</Alert> : null
@@ -95,6 +96,7 @@ export const BeneficiairesVirement = (props: { selectedBeneficiaire: SelectedBen
     </Table>
 }
 export const VirementForm = (props: any) => {
+    const history = useHistory();
     const {register, errors, handleSubmit} = useForm<any>();
     const onSubmit = (data: any) => {
         let isValid = true;
@@ -104,16 +106,47 @@ export const VirementForm = (props: any) => {
             }
         })
         if (isValid) {
-            console.log(data,props)
+            const submitForm =
+                {
+                    ...data,
+                    selectedBeneficiaire: props.state.selectedBeneficiaire
+
+                }
+            http.post('ajouter-virement', submitForm).then(response => {
+                const detail = {
+                    id: response.data,
+                    ...submitForm
+                };
+
+                console.log(detail)
+                history.push({
+                    pathname: '/verification',
+                    state: {detail}
+                });
+            }).catch(error => {
+                console.log(error)
+            })
         }
     };
+
+    const checkForBalance = (numeroCompte: string) => {
+        const index = (props.state.comptes as Compte[]).findIndex(e => e.numeroCompte === numeroCompte)
+        if (index !== -1) {
+            return props.state.comptes[index].soldeComptable >= props.state.montant
+        }
+        return false
+    }
+    const display_date = new Date().toISOString().split('T')[0]
     return <Form onSubmit={handleSubmit(onSubmit)}>
         <Row>
             <Col className="col-6">
                 <Form.Group controlId="select">
                     <Form.Label>Choisir un compte :</Form.Label>
                     <Form.Control as="select"
-                                  name="accountNumber" ref={register({required: true})}>
+                                  name="accountNumber" ref={register({
+                        required: true,
+                        validate: checkForBalance
+                    })}>
                         {
                             props.state.comptes.map((e: Compte) => {
                                 return <option key={e.id}
@@ -126,37 +159,41 @@ export const VirementForm = (props: any) => {
                         (errors.accountNumber?.type === 'required') ?
                             <Alert className='mt-2' variant="danger">{"Vous devez spécifier un compte"}</Alert> : null
                     }
+                    {
+                        (errors.accountNumber?.type === 'validate') ?
+                            <Alert className='mt-2'
+                                   variant="danger">{"Assurez-vous d'avoir suffisamment d'argent sur votre compte pour cette opération"}</Alert> : null
+                    }
                 </Form.Group>
             </Col>
-        </Row>
-        <Row>
-
             <Col>
                 <Form.Group controlId="DateDeCreation">
                     <Form.Label>Date de création</Form.Label>
                     <Form.Control type="text" name="createdDate"
                                   ref={register({required: true})}
-                                  value={new Date().toISOString()} readOnly/>
+                                  value={display_date} readOnly/>
                 </Form.Group>
                 {
                     (errors.createdDate?.type === 'required') ?
                         <Alert className='mt-2' variant="danger">{"Error"}</Alert> : null
                 }
             </Col>
-            <Col>
-                <Form.Group controlId="DateDeExecution">
-                    <Form.Label>Date d'exécution</Form.Label>
-                    <Form.Control type="date"
-                                  name="executedDate"
-                                  ref={register({required: true})}
-                    />
-                </Form.Group>
-                {
-                    (errors.executedDate?.type === 'required') ?
-                        <Alert className='mt-2' variant="danger">Vous devez spécifier une date</Alert> : null
-                }
-            </Col>
         </Row>
+        {/*<Row>*/}
+        {/*    <Col>*/}
+        {/*        <Form.Group controlId="DateDeExecution">*/}
+        {/*            <Form.Label>Date d'exécution</Form.Label>*/}
+        {/*            <Form.Control type="date"*/}
+        {/*                          name="executedDate"*/}
+        {/*                          ref={register({required: true})}*/}
+        {/*            />*/}
+        {/*        </Form.Group>*/}
+        {/*        {*/}
+        {/*            (errors.executedDate?.type === 'required') ?*/}
+        {/*                <Alert className='mt-2' variant="danger">Vous devez spécifier une date</Alert> : null*/}
+        {/*        }*/}
+        {/*    </Col>*/}
+        {/*</Row>*/}
         <Row>
             <Col>
                 <Form.Group controlId="motif">
@@ -242,7 +279,6 @@ const AjouterVirment = () => {
             ))
         });
         http.get('/abonnes/1/comptes').then(response => {
-            console.log(response)
             setState(state => (
                 {
                     ...state, comptes: response.data._embedded.comptes.map((e: Compte) => ({
