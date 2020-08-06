@@ -112,36 +112,18 @@ export const VirementForm = (props: any) => {
                     selectedBeneficiaire: props.state.selectedBeneficiaire
 
                 }
-            if(props.state.updateMode){
-               const updateForm = {
-                    id:props.state.id,
-                    ...submitForm
-                }
-                http.post('modifier-virement',updateForm)
-                    .then(response=>{
-                        history.push({
-                            pathname: '/list-virements',
-                        });
-                    })
-                    .catch(err =>{
-                        console.log(err);
-                    })
-            }else {
-                http.post('ajouter-virement', submitForm).then(response => {
+                http.post(props.state.updateMode?'modifier-virement/'+props.state.id:'ajouter-virement', submitForm).then(response => {
                     const detail = {
                         id: response.data,
                         ...submitForm
                     };
-
-                    console.log(detail)
                     history.push({
-                        pathname: '/verification',
-                        state: {detail}
+                        pathname: props.state.updateMode?'/list-virements':'/verification',
+                        state: props.state.updateMode?null:{detail}
                     });
                 }).catch(error => {
                     console.log(error)
                 })
-            }
 
         }
     };
@@ -229,7 +211,7 @@ export const VirementForm = (props: any) => {
                 <Form.Group controlId="NombreDeBeneficiaires">
                     <Form.Label>Nombre de bénéficiaires</Form.Label>
                     <Form.Control type="number" name="nbrOfBenf"
-                                  defaultValue={props.state.updateMode?props.state.virement.nbrOfBenf:0}
+                                  defaultValue={props.state.updateMode?+props.state.virement.nbrOfBenf:0}
                                   ref={register({
                                       required: true,
                                       validate: (n: number) => +n === props.state.selectedBeneficiaire.length,
@@ -317,13 +299,13 @@ const AjouterVirment = () => {
         if(data.id){
             http.get("get-virement/"+data.id)
                 .then(response =>{
-                    console.log(response)
+                    console.log(response.data)
                     setState(state =>({
                         ...state,
                         montant: response.data.montant,
                         updateMode: true,
                         selectedBeneficiaire: response.data.selectedBeneficiaire?.map((b:SelectedBeneficiaire)=>({
-                            id:b.id,montant:b.montant, nom: state.beneficiaire?.find(i => i.id==b.id)?.nom,prenom: state.beneficiaire?.find(i => i.id==b.id)?.prenom
+                            id:b.id,montant:b.montant, nom: state.beneficiaire?.find(i => i.id===b.id)?.nom,prenom: state.beneficiaire?.find(i => i.id===b.id)?.prenom
                         })),
                         virement: response.data,
                         id: data.id
