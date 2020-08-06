@@ -3,7 +3,7 @@ import {Alert, Button, Col, Form, FormControl, InputGroup, Row, Table} from "rea
 import {useForm} from "react-hook-form";
 
 import http from '../client'
-import {useHistory} from "react-router-dom";
+import {useHistory, useLocation} from "react-router-dom";
 
 type Beneficiaire = {
     id: number,
@@ -38,7 +38,7 @@ export const ListBeneficiaires = (props: { beneficiaires: Beneficiaire[], addBen
             </thead>
             <tbody>
             {
-                props.beneficiaires.map(beneficiaire => {
+                props.beneficiaires?.map(beneficiaire => {
                     return (
                         <tr key={beneficiaire.id}>
                             <td>{beneficiaire.id}</td>
@@ -112,20 +112,37 @@ export const VirementForm = (props: any) => {
                     selectedBeneficiaire: props.state.selectedBeneficiaire
 
                 }
-            http.post('ajouter-virement', submitForm).then(response => {
-                const detail = {
-                    id: response.data,
+            if(props.state.updateMode){
+               const updateForm = {
+                    id:props.state.id,
                     ...submitForm
-                };
+                }
+                http.post('modifier-virement',updateForm)
+                    .then(response=>{
+                        history.push({
+                            pathname: '/list-virements',
+                        });
+                    })
+                    .catch(err =>{
+                        console.log(err);
+                    })
+            }else {
+                http.post('ajouter-virement', submitForm).then(response => {
+                    const detail = {
+                        id: response.data,
+                        ...submitForm
+                    };
 
-                console.log(detail)
-                history.push({
-                    pathname: '/verification',
-                    state: {detail}
-                });
-            }).catch(error => {
-                console.log(error)
-            })
+                    console.log(detail)
+                    history.push({
+                        pathname: '/verification',
+                        state: {detail}
+                    });
+                }).catch(error => {
+                    console.log(error)
+                })
+            }
+
         }
     };
 
@@ -147,6 +164,7 @@ export const VirementForm = (props: any) => {
                         required: true,
                         validate: checkForBalance
                     })}>
+                        <option>{props.state.updateMode?props.state.comptes.find((c:Compte) => c.numeroCompte==props.state.virement.accountNumber)?.numeroCompte+' : ('+props.state.comptes.find((c:Compte) => c.numeroCompte==props.state.virement.accountNumber)?.soldeComptable+'DH)':' '}</option>
                         {
                             props.state.comptes.map((e: Compte) => {
                                 return <option key={e.id}
@@ -171,7 +189,7 @@ export const VirementForm = (props: any) => {
                     <Form.Label>Date de création</Form.Label>
                     <Form.Control type="text" name="createdDate"
                                   ref={register({required: true})}
-                                  value={display_date} readOnly/>
+                                  value={props.state.updateMode? props.state.virement.createdDate.toString().split('T')[0]:display_date} readOnly/>
                 </Form.Group>
                 {
                     (errors.createdDate?.type === 'required') ?
@@ -199,6 +217,7 @@ export const VirementForm = (props: any) => {
                 <Form.Group controlId="motif">
                     <Form.Label>Motif</Form.Label>
                     <Form.Control type="text" name="motif"
+                                  defaultValue={props.state.updateMode?props.state.virement.motif:''}
                                   ref={register({required: true})}/>
                 </Form.Group>
                 {
@@ -210,6 +229,7 @@ export const VirementForm = (props: any) => {
                 <Form.Group controlId="NombreDeBeneficiaires">
                     <Form.Label>Nombre de bénéficiaires</Form.Label>
                     <Form.Control type="number" name="nbrOfBenf"
+                                  defaultValue={props.state.updateMode?props.state.virement.nbrOfBenf:0}
                                   ref={register({
                                       required: true,
                                       validate: (n: number) => +n === props.state.selectedBeneficiaire.length,
@@ -250,7 +270,7 @@ export const VirementForm = (props: any) => {
         </Row>
         <Row>
             <Col>
-                <Button type="submit">Save</Button>
+                <Button type="submit">{props.state.updateMode?'Update':'Save'}</Button>
             </Col>
         </Row>
     </Form>
@@ -260,15 +280,22 @@ const AjouterVirment = () => {
     const selectedBeneficiaire: SelectedBeneficiaire[] = [];
     const beneficiaire: Beneficiaire[] = [];
     const comptes: Compte[] = [];
+    const location = useLocation();
+    const virement:any[] = [];
+    const updateMode:boolean = false;
     const
         [state, setState] = useState({
             beneficiaire: beneficiaire,
             selectedBeneficiaire: selectedBeneficiaire,
             montant: 0,
             comptes: comptes,
-
+            updateMode: updateMode,
+            virement: virement,
+            id: -1
         });
     useEffect(() => {
+        let data:any = {...location.state}
+
         http.get('/abonnes/2/beneficiaires').then(response => {
             setState(state => (
                 {
@@ -287,6 +314,25 @@ const AjouterVirment = () => {
                 }
             ))
         });
+        if(data.id){
+            http.get("get-virement/"+data.id)
+                .then(response =>{
+                    console.log(response)
+                    setState(state =>({
+                        ...state,
+                        montant: response.data.montant,
+                        updateMode: true,
+                        selectedBeneficiaire: response.data.selectedBeneficiaire?.map((b:SelectedBeneficiaire)=>({
+                            id:b.id,montant:b.montant, nom: state.beneficiaire?.find(i => i.id==b.id)?.nom,prenom: state.beneficiaire?.find(i => i.id==b.id)?.prenom
+                        })),
+                        virement: response.data,
+                        id: data.id
+                    }))
+                })
+                .catch(err =>{
+                    console.log(err)
+                })
+        }
 
     }, [])
     const addBeneficiaire = (data: Beneficiaire) => {

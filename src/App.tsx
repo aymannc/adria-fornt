@@ -9,6 +9,7 @@ import {Container} from "react-bootstrap";
 import Header from "./header/Header";
 import AjouterVirment from "./virment/AjouterVirement";
 import SignerVirement, {SignSuccess} from "./virment/SignerVirement";
+import virementList from "./virment/virementList";
 
 const store = createStore(combineReducers({}))
 
@@ -24,7 +25,7 @@ function App() {
                         <Route path='/ajouter-virement' component={AjouterVirment}/>
                         <Route path='/verification' component={SignerVirement}/>
                         <Route path='/success' component={SignSuccess}/>
-                        <Route path='/list-virements' render={() => <p>list-virements</p>}/>
+                        <Route path='/list-virements' component={virementList}/>
                         <Redirect to='/auth'/>
                     </Switch>
                 </Container>
