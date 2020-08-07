@@ -27,7 +27,7 @@ export const SignSuccess = () => {
         </Col>
     </Row>
 }
-const SignerVirement = (props: any) => {
+const SignerVirement = () => {
     const location = useLocation();
     const history = useHistory();
     // @ts-ignore

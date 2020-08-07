@@ -146,7 +146,7 @@ export const VirementForm = (props: any) => {
                         required: true,
                         validate: checkForBalance
                     })}>
-                        <option>{props.state.updateMode?props.state.comptes.find((c:Compte) => c.numeroCompte==props.state.virement.accountNumber)?.numeroCompte+' : ('+props.state.comptes.find((c:Compte) => c.numeroCompte==props.state.virement.accountNumber)?.soldeComptable+'DH)':' '}</option>
+                        <option>{props.state.updateMode?props.state.comptes.find((c:Compte) => c.numeroCompte===props.state.virement.accountNumber)?.numeroCompte+' : ('+props.state.comptes.find((c:Compte) => c.numeroCompte===props.state.virement.accountNumber)?.soldeComptable+'DH)':' '}</option>
                         {
                             props.state.comptes.map((e: Compte) => {
                                 return <option key={e.id}

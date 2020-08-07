@@ -1,24 +1,17 @@
 import React from "react";
 import {Alert, Button, Col, Form, Row} from "react-bootstrap";
 import {useForm} from "react-hook-form";
-import http from '../client'
+import * as actions from './AuthAction'
+import {connect} from 'react-redux'
+import {IAuthData} from "../shared/types";
 
-interface IFormInput {
-    username: string;
-    password: string;
-}
 
-const Auth = () => {
+const Auth = (props: any) => {
 
-    const {register, errors, handleSubmit} = useForm<IFormInput>();
+    const {register, errors, handleSubmit} = useForm<IAuthData>();
 
-    const onSubmit = (data: IFormInput) => {
-        console.log(data)
-        http.post('/login', data, {}).then(results => {
-            console.log(results.headers.authorization)
-        }).catch((error) => {
-            console.log(error);
-        })
+    const onSubmit = (data: IAuthData) => {
+        props.onAuth(data);
     };
 
     return (
@@ -57,4 +50,9 @@ const Auth = () => {
     )
 
 }
-export default Auth;
+const mapDispatchToProps = (dispatch: any) => {
+    return {
+        onAuth: (data: IAuthData) => dispatch(actions.auth(data))
+    }
+}
+export default connect(null, mapDispatchToProps)(Auth);
