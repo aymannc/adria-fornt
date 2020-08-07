@@ -142,11 +142,11 @@ export const VirementForm = (props: any) => {
                 <Form.Group controlId="select">
                     <Form.Label>Choisir un compte :</Form.Label>
                     <Form.Control as="select"
+                                  value={props.state.updateMode ? props.state.comptes.filter((c: Compte) => c.numeroCompte === props.state.virement.accountNumber):props.state.comptes[0]}
                                   name="accountNumber" ref={register({
                         required: true,
                         validate: checkForBalance
                     })}>
-                        <option>{props.state.updateMode ? props.state.comptes.find((c: Compte) => c.numeroCompte === props.state.virement.accountNumber)?.numeroCompte + ' : (' + props.state.comptes.find((c: Compte) => c.numeroCompte === props.state.virement.accountNumber)?.soldeComptable + 'DH)' : ' '}</option>
                         {
                             props.state.comptes.map((e: Compte) => {
                                 return <option key={e.id}
@@ -209,10 +209,11 @@ export const VirementForm = (props: any) => {
                 }
             </Col>
             <Col>
+
                 <Form.Group controlId="NombreDeBeneficiaires">
                     <Form.Label>Nombre de bénéficiaires</Form.Label>
                     <Form.Control type="number" name="nbrOfBenf"
-                                  defaultValue={props.state.updateMode ? +props.state.virement.nbrOfBenf : 0}
+                                  defaultValue={props.state.virement.nbrOfBenf}
                                   ref={register({
                                       required: true,
                                       validate: (n: number) => +n === props.state.selectedBeneficiaire.length,
@@ -308,8 +309,8 @@ const AjouterVirment = () => {
                         selectedBeneficiaire: response.data.selectedBeneficiaire?.map((b: SelectedBeneficiaire) => ({
                             id: b.id,
                             montant: b.montant,
-                            nom: state.beneficiaire?.find(i => i.id === b.id)?.nom,
-                            prenom: state.beneficiaire?.find(i => i.id === b.id)?.prenom
+                            nom: b.nom,
+                            prenom: b.prenom
                         })),
                         virement: response.data,
                         id: data.id

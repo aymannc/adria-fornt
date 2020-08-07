@@ -30,6 +30,7 @@ type Virement = {
     motif: string,
     montant: number,
     dateExcecution: Date,
+    statut: string,
     abonne: Abonne,
     compte: Compte,
     _links: {
@@ -73,12 +74,14 @@ const virementList = () => {
         http.get(url)
             .then(response => {
                 if (response.status === 200) {
+                    console.log(response)
                     setState({
                         ...state,
                         virements: response.data._embedded.virmentMultiples?.map((v: Virement) => ({
                             id: v.id,
                             dateCreation: v.dateCreation,
                             motif: v.motif,
+                            statut:v.statut,
                             montant: v.montant,
                             dateExecution: v.dateExcecution,
                             abonne: {username: v.abonne.username, nom: v.abonne.nom, prenom: v.abonne.prenom},
@@ -138,7 +141,6 @@ const virementList = () => {
     }
 
     const filterVirementList = (data: any) => {
-        console.log(data)
         data.compteNumero = data.compteNumero.toString().split('/')[(data.compteNumero.toString().split('/').length) - 1];
         http.post("filter-virement", data)
             .then(response => {
@@ -149,6 +151,7 @@ const virementList = () => {
                             id: v.id,
                             dateCreation: v.dateCreation,
                             motif: v.motif,
+                            statut: v.statut,
                             montant: v.montant,
                             dateExecution: v.dateExcecution,
                             abonne: {username: v.abonne.username, nom: v.abonne.nom, prenom: v.abonne.prenom},
@@ -206,6 +209,9 @@ export const VirementTable = (props: { virements: Virement[], deletVirement: Fun
                 <th>Actions</th>
             </tr>
             </thead>
+            {
+                console.log(props.virements)
+            }
             <tbody>
             {
                 props.virements?.map(v => {
@@ -218,10 +224,10 @@ export const VirementTable = (props: { virements: Virement[], deletVirement: Fun
                             </td>
                             <td>{v.montant}</td>
                             <td>{v.motif}</td>
-                            <td>{}</td>
+                            <td>{v.statut}</td>
                             <td>
-                                <Button variant="danger" onClick={() => props.deletVirement(v)}>-</Button>
-                                <Button variant="success" onClick={() => props.modifyVirement(v)}>+</Button>
+                                <Button variant="danger" disabled={v.dateExcecution?false:true} onClick={() => props.deletVirement(v)}>-</Button>
+                                <Button variant="success" disabled={v.dateExcecution?false:true} onClick={() => props.modifyVirement(v)}>+</Button>
                             </td>
                         </tr>
                     )
