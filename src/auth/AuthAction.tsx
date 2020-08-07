@@ -1,8 +1,8 @@
 import * as authActions from './AuthActionTypes';
 import {AxiosError} from "axios";
 import http from "../app/Client";
-import {Action, AuthResults, IAuthData} from "../shared/types";
-import {parseJwt} from "../shared/utilityFunctions";
+import {Action, AuthResults, IAuthData} from "../app/types";
+import {parseJwt} from "../app/utilityFunctions";
 import {Dispatch} from "redux";
 
 export const authStart = () => {

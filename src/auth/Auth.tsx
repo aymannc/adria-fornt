@@ -3,7 +3,7 @@ import {Alert, Button, Col, Form, Row, Spinner} from "react-bootstrap";
 import {useForm} from "react-hook-form";
 import * as actions from './AuthAction'
 import {useDispatch, useSelector} from 'react-redux'
-import {GlobalState, IAuthData} from "../shared/types";
+import {GlobalState, IAuthData} from "../app/types";
 import {Redirect} from 'react-router-dom'
 
 const Auth = (props: any) => {
@@ -80,7 +80,7 @@ export default Auth;
 // }
 // const mapDispatchToProps = (dispatch: any) => {
 //     return {
-//         onAuth: (data: IAuthData) => dispatch(actions.auth(data))
+//         onAuth: (data: IAuthData) => dispatch(actions.auth(data)),
 //     }
 // }
 // export default connect(mapStateToProps, mapDispatchToProps)(Auth);

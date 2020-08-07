@@ -4,7 +4,7 @@ import {Alert, Button, Col, Form, ListGroup, Row} from "react-bootstrap";
 import {useForm} from "react-hook-form";
 import http from "../app/Client";
 import {useSelector} from "react-redux";
-import {GlobalState} from "../shared/types";
+import {GlobalState} from "../app/types";
 
 type Overview = {
     id: number,

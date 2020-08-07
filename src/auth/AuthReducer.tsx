@@ -1,7 +1,7 @@
 import * as actions from './AuthActionTypes'
 import {AxiosError} from "axios";
-import {Action, AuthResults, AuthState, IAuthData} from "../shared/types";
-import {updateObject} from "../shared/utilityFunctions";
+import {Action, AuthResults, AuthState, IAuthData} from "../app/types";
+import {updateObject} from "../app/utilityFunctions";
 
 
 const initialState: AuthState = {

@@ -5,7 +5,7 @@ import {useForm} from "react-hook-form";
 import http from '../app/Client'
 import {Redirect, useHistory, useLocation} from "react-router-dom";
 import {useSelector} from "react-redux";
-import {GlobalState} from "../shared/types";
+import {GlobalState} from "../app/types";
 
 type Beneficiaire = {
     id: number,

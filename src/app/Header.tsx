@@ -2,7 +2,7 @@ import React,{Fragment} from 'react';
 import {Nav, Navbar} from "react-bootstrap";
 import {useHistory} from "react-router-dom";
 import {useDispatch, useSelector} from "react-redux";
-import {GlobalState} from "../shared/types";
+import {GlobalState} from "./types";
 import {logOut} from '../auth/AuthAction'
 
 const iconPath = process.env.PUBLIC_URL + '/logo192.png';

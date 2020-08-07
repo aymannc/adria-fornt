@@ -7,7 +7,7 @@ import http from '../app/Client';
 import {Redirect, useHistory} from 'react-router-dom';
 import {useForm} from "react-hook-form";
 import {useSelector} from "react-redux";
-import {GlobalState} from "../shared/types";
+import {GlobalState} from "../app/types";
 
 type Compte = {
     id: number,
