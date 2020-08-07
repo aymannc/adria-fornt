@@ -26,7 +26,7 @@ export const logOut = () => {
     return {type: authActions.AUTH_LOGOUT};
 }
 export const checkAuthTimeOut = (timeOut: number) => {
-    console.log(timeOut, new Date().getTime() / 1000, (timeOut - new Date().getTime()) / 1000)
+    // console.log(timeOut, new Date().getTime() / 1000, (timeOut - new Date().getTime()) / 1000)
     return (dispatch: Dispatch) => {
         setTimeout(() => {
             dispatch(logOut())

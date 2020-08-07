@@ -4,8 +4,10 @@ import React, {Fragment, useEffect, useState} from 'react';
 
 import {Alert, Button, Col, Form, Row, Table} from 'react-bootstrap';
 import http from '../app/client';
-import {useHistory} from 'react-router-dom';
+import {Redirect, useHistory} from 'react-router-dom';
 import {useForm} from "react-hook-form";
+import {useSelector} from "react-redux";
+import {GlobalState} from "../shared/types";
 
 type Compte = {
     id: number,
@@ -52,6 +54,9 @@ const virementList = () => {
         comptes: comptes,
         virements: virements
     })
+    const {userId, token} = useSelector(
+        (state: GlobalState) => state.auth
+    );
 
     const deleteVirement = (v: Virement) => {
         const answer = window.confirm(`Want to delete "${v.motif}" with ${v.montant} DH?`)
@@ -81,9 +86,9 @@ const virementList = () => {
                             id: v.id,
                             dateCreation: v.dateCreation,
                             motif: v.motif,
-                            statut:v.statut,
+                            statut: v.statut,
                             montant: v.montant,
-                            dateExecution: v.dateExcecution,
+                            dateExcecution: v.dateExcecution,
                             abonne: {username: v.abonne.username, nom: v.abonne.nom, prenom: v.abonne.prenom},
                             compte: {
                                 id: v.compte.id,
@@ -107,25 +112,28 @@ const virementList = () => {
     }
 
     const loadComptes = () => {
-        http.get("comptes")
-            .then(response => {
-                if (response.status === 200) {
-                    setState(state => (
-                        {
-                            ...state, comptes: response.data._embedded.comptes.map((e: Compte) => ({
-                                id: e.id,
-                                intitule: e.intitule,
-                                numeroCompte: e.numeroCompte,
-                                soldeComptable: e.soldeComptable,
-                                _links: e._links
-                            }))
-                        }
-                    ))
-                }
-            })
-            .catch(err => {
-                console.log(err);
-            })
+        if (userId) {
+            http.get("abonnes/" + userId + "/comptes")
+                .then(response => {
+                    if (response.status === 200) {
+                        setState(state => (
+                            {
+                                ...state, comptes: response.data._embedded.comptes.map((e: Compte) => ({
+                                    id: e.id,
+                                    intitule: e.intitule,
+                                    numeroCompte: e.numeroCompte,
+                                    soldeComptable: e.soldeComptable,
+                                    _links: e._links
+                                }))
+                            }
+                        ))
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+        }
+
     }
 
     const modifyVirement = (v: Virement) => {
@@ -153,7 +161,7 @@ const virementList = () => {
                             motif: v.motif,
                             statut: v.statut,
                             montant: v.montant,
-                            dateExecution: v.dateExcecution,
+                            dateExcecution: v.dateExcecution,
                             abonne: {username: v.abonne.username, nom: v.abonne.nom, prenom: v.abonne.prenom},
                             compte: {
                                 id: v.compte.id,
@@ -175,6 +183,7 @@ const virementList = () => {
     }, []);
     return (
         <Fragment>
+            {token ? null : <Redirect to="/auth"/>}
             <Row className="mt-4">
                 <Col md={{span: 6, offset: 3}}>
                     <FilteringForm comptes={state.comptes} onChangeCompte={(onChangeCompte)}
@@ -195,6 +204,11 @@ const virementList = () => {
 }
 
 export const VirementTable = (props: { virements: Virement[], deletVirement: Function, modifyVirement: Function }) => {
+
+    const spanStyle = {
+        color: 'blue',
+        textDecoration: 'underline',
+    };
     return (
 
         <Table striped bordered hover>
@@ -213,25 +227,33 @@ export const VirementTable = (props: { virements: Virement[], deletVirement: Fun
                 console.log(props.virements)
             }
             <tbody>
+
             {
-                props.virements?.map(v => {
+                props.virements ? props.virements?.map(v => {
                     return (
                         <tr key={v.id}>
                             <td>{v.id}</td>
                             <td>{v.dateCreation.toString().split('T')[0]}</td>
-                            <td><a
-                                href="#">{v.compte.numeroCompte + ' ' + v.compte.intitule.toUpperCase() + ' ' + v.abonne.nom.toUpperCase() + ' ' + v.abonne.prenom.toUpperCase()}</a>
+                            <td><span
+                                style={spanStyle}>{v.compte.numeroCompte + ' ' + v.compte.intitule.toUpperCase() + ' ' +
+                            v.abonne.nom.toUpperCase() + ' ' + v.abonne.prenom.toUpperCase()}</span>
                             </td>
                             <td>{v.montant}</td>
                             <td>{v.motif}</td>
                             <td>{v.statut}</td>
-                            <td>
-                                <Button variant="danger" disabled={v.dateExcecution?false:true} onClick={() => props.deletVirement(v)}>-</Button>
-                                <Button variant="success" disabled={v.dateExcecution?false:true} onClick={() => props.modifyVirement(v)}>+</Button>
-                            </td>
+                            {
+                                !v.dateExcecution ? <td>
+                                    <Button variant="danger"
+                                            onClick={() => props.deletVirement(v)}>-</Button>
+                                    <Button variant="success"
+                                            onClick={() => props.modifyVirement(v)}>+</Button>
+                                </td> : <td/>
+                            }
                         </tr>
                     )
-                })
+                }) : <tr>
+                    <td colSpan={7}>No Data</td>
+                </tr>
             }
             </tbody>
         </Table>

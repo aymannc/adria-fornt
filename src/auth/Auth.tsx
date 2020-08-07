@@ -4,10 +4,9 @@ import {useForm} from "react-hook-form";
 import * as actions from './AuthAction'
 import {useDispatch, useSelector} from 'react-redux'
 import {GlobalState, IAuthData} from "../shared/types";
-
+import {Redirect} from 'react-router-dom'
 
 const Auth = (props: any) => {
-
     const {register, errors, handleSubmit} = useForm<IAuthData>();
 
     const {loading, error, token} = useSelector(
@@ -18,11 +17,11 @@ const Auth = (props: any) => {
 
     const onSubmit = (data: IAuthData) => {
         dispatch(actions.auth(data));
-        // props.onAuth(data);
     };
 
     return (
         <Row className="justify-content-md-center mt-4">
+            {token ? <Redirect to="/list-virements"/> : null}
             <Col xl={6} md={8} sm={10}>
                 <h2 className="mb-4">Login</h2>
                 {

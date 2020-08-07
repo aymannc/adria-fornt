@@ -3,7 +3,9 @@ import {Alert, Button, Col, Form, FormControl, InputGroup, Row, Table} from "rea
 import {useForm} from "react-hook-form";
 
 import http from '../app/client'
-import {useHistory, useLocation} from "react-router-dom";
+import {Redirect, useHistory, useLocation} from "react-router-dom";
+import {useSelector} from "react-redux";
+import {GlobalState} from "../shared/types";
 
 type Beneficiaire = {
     id: number,
@@ -106,20 +108,21 @@ export const VirementForm = (props: any) => {
             }
         })
         if (isValid) {
+            const url = props.state.updateMode ? 'modifier-virement/' + props.state.id : 'ajouter-virement';
             const submitForm =
                 {
                     ...data,
                     selectedBeneficiaire: props.state.selectedBeneficiaire
 
                 }
-            http.post(props.state.updateMode ? 'modifier-virement/' + props.state.id : 'ajouter-virement', submitForm).then(response => {
+            http.post(url, submitForm).then(response => {
                 const detail = {
                     id: response.data,
                     ...submitForm
                 };
                 history.push({
-                    pathname: props.state.updateMode ? '/list-virements' : '/verification',
-                    state: props.state.updateMode ? null : {detail}
+                    pathname: '/verification',
+                    state: {detail}
                 });
             }).catch(error => {
                 console.log(error)
@@ -142,7 +145,7 @@ export const VirementForm = (props: any) => {
                 <Form.Group controlId="select">
                     <Form.Label>Choisir un compte :</Form.Label>
                     <Form.Control as="select"
-                                  value={props.state.updateMode ? props.state.comptes.filter((c: Compte) => c.numeroCompte === props.state.virement.accountNumber):props.state.comptes[0]}
+                                  defaultValue={props.state.updateMode ? props.state.comptes.filter((c: Compte) => c.numeroCompte === props.state.virement.accountNumber) : props.state.comptes[0]}
                                   name="accountNumber" ref={register({
                         required: true,
                         validate: checkForBalance
@@ -280,7 +283,7 @@ const AjouterVirment = () => {
     useEffect(() => {
         let data: any = {...location.state}
 
-        http.get('/abonnes/2/beneficiaires').then(response => {
+        http.get('/abonnes/' + userId + '/beneficiaires').then(response => {
             setState(state => (
                 {
                     ...state, beneficiaire: response.data._embedded.beneficiaires.map((e: Beneficiaire) => ({
@@ -289,7 +292,7 @@ const AjouterVirment = () => {
                 }
             ))
         });
-        http.get('/abonnes/1/comptes').then(response => {
+        http.get('/abonnes/' + userId + '/comptes').then(response => {
             setState(state => (
                 {
                     ...state, comptes: response.data._embedded.comptes.map((e: Compte) => ({
@@ -365,8 +368,12 @@ const AjouterVirment = () => {
         }
 
     }
+    const {userId, token} = useSelector(
+        (state: GlobalState) => state.auth
+    );
     return (
         <Fragment>
+            {token ? null : <Redirect to="/auth"/>}
             <h1>Virement</h1>
             <Row className="mt-4">
                 <Col>

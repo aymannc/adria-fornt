@@ -1,5 +1,5 @@
 import React, {Fragment, useState} from "react";
-import {useHistory, useLocation} from "react-router-dom";
+import {Redirect, useHistory, useLocation} from "react-router-dom";
 import {Alert, Button, Col, Form, ListGroup, Row} from "react-bootstrap";
 import {useForm} from "react-hook-form";
 import http from "../app/client";
@@ -38,7 +38,7 @@ export const SignSuccess = () => {
 
 
 const SignerVirement = () => {
-    const {userId} = useSelector(
+    const {userId, token} = useSelector(
         (state: GlobalState) => state.auth
     );
 
@@ -55,7 +55,7 @@ const SignerVirement = () => {
             id: userId ? userId : -1,
             password: data.password
         }
-        http.post('sign', form).then(response => {
+        http.post('sign', form, {headers: {'Authorization': token}}).then(response => {
             if (response.data === true) {
                 history.push('/success')
             }
@@ -66,6 +66,7 @@ const SignerVirement = () => {
     };
     return (
         <Fragment>
+            {token ? null : <Redirect to="/auth"/>}
             <Row>
                 <Col className="col-6 mx-auto mt-5">
                     {error !== '' ? <Alert className='mt-2' variant="danger">{error}</Alert> : null}
@@ -75,7 +76,6 @@ const SignerVirement = () => {
                 <Col className="col-6 mx-auto">
                     <h2>Détails de virement</h2>
                     <ListGroup variant="flush">
-                        <ListGroup.Item>Numero de compte : {state.id}</ListGroup.Item>
                         <ListGroup.Item>Numero de compte : {state.accountNumber}</ListGroup.Item>
                         <ListGroup.Item>Date de création : {state.createdDate}</ListGroup.Item>
                         <ListGroup.Item>Motif : {state.motif}</ListGroup.Item>
