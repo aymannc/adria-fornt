@@ -1,6 +1,6 @@
 import * as authActions from './AuthActionTypes';
 import {AxiosError} from "axios";
-import http from "../app/client";
+import http from "../app/Client";
 import {Action, AuthResults, IAuthData} from "../shared/types";
 import {parseJwt} from "../shared/utilityFunctions";
 import {Dispatch} from "redux";
@@ -23,14 +23,16 @@ export const authFail = (error: AxiosError) => {
     }
 }
 export const logOut = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('expireDate')
     return {type: authActions.AUTH_LOGOUT};
 }
 export const checkAuthTimeOut = (timeOut: number) => {
-    // console.log(timeOut, new Date().getTime() / 1000, (timeOut - new Date().getTime()) / 1000)
+    const diff = timeOut * 1000 - new Date().getTime();
     return (dispatch: Dispatch) => {
         setTimeout(() => {
             dispatch(logOut())
-        }, timeOut * 1000 - new Date().getTime());
+        }, diff);
     }
 }
 export const auth = (data: IAuthData) => {
@@ -39,6 +41,8 @@ export const auth = (data: IAuthData) => {
         http.post('/login', data)
             .then(results => {
                 const jwtData = parseJwt(results.headers.authorization);
+                localStorage.setItem('token', results.headers.authorization)
+                localStorage.setItem('expireDate', new Date(+jwtData.exp * 1000).toString())
                 dispatch(authSuccess({
                     token: results.headers.authorization,
                     userId: +jwtData.sub,
@@ -48,5 +52,27 @@ export const auth = (data: IAuthData) => {
             }).catch((error) => {
             dispatch(authFail(error))
         })
+    }
+}
+export const authCheckState = () => {
+    return (dispatch: any) => {
+        const token = localStorage.getItem('token')
+        const expireDateString = localStorage.getItem('expireDate')
+        if (token && expireDateString) {
+            const expireDate = new Date(expireDateString)
+            if (expireDate < new Date()) {
+                dispatch(logOut())
+            } else {
+                const jwtData = parseJwt(token);
+                dispatch(authSuccess({
+                    token: token,
+                    userId: +jwtData.sub,
+                    expireDate: +jwtData.exp
+                }))
+                dispatch(checkAuthTimeOut(expireDate.getTime() / 1000))
+            }
+        } else {
+            dispatch(logOut())
+        }
     }
 }

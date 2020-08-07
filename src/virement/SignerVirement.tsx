@@ -2,7 +2,7 @@ import React, {Fragment, useState} from "react";
 import {Redirect, useHistory, useLocation} from "react-router-dom";
 import {Alert, Button, Col, Form, ListGroup, Row} from "react-bootstrap";
 import {useForm} from "react-hook-form";
-import http from "../app/client";
+import http from "../app/Client";
 import {useSelector} from "react-redux";
 import {GlobalState} from "../shared/types";
 

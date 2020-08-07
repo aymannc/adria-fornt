@@ -3,7 +3,7 @@ import React, {Fragment, useEffect, useState} from 'react';
 
 
 import {Alert, Button, Col, Form, Row, Table} from 'react-bootstrap';
-import http from '../app/client';
+import http from '../app/Client';
 import {Redirect, useHistory} from 'react-router-dom';
 import {useForm} from "react-hook-form";
 import {useSelector} from "react-redux";
@@ -43,7 +43,7 @@ type Virement = {
 }
 
 
-const virementList = () => {
+const VirementList = () => {
 
     const comptes: Compte[] = [];
     const virements: Virement[] = [];
@@ -223,9 +223,6 @@ export const VirementTable = (props: { virements: Virement[], deletVirement: Fun
                 <th>Actions</th>
             </tr>
             </thead>
-            {
-                console.log(props.virements)
-            }
             <tbody>
 
             {
@@ -327,4 +324,4 @@ export const FilteringForm = (props: { comptes: Compte[], onChangeCompte: Functi
     )
 }
 
-export default virementList;
+export default VirementList;

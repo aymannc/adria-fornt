@@ -1,7 +1,6 @@
-import React from "react";
+import React, {useEffect} from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import {Provider} from "react-redux";
-import {applyMiddleware, combineReducers, compose, createStore} from "redux";
+import {useDispatch} from "react-redux";
 import {BrowserRouter} from "react-router-dom";
 import {Redirect, Route, Switch} from "react-router";
 import Auth from "./auth/Auth";
@@ -9,32 +8,30 @@ import {Container} from "react-bootstrap";
 import Header from "./app/Header";
 import AjouterVirment from "./virement/AjouterVirement";
 import SignerVirement, {SignSuccess} from "./virement/SignerVirement";
-import virementList from "./virement/virementList";
-import thunk from "redux-thunk";
-import authReducer from './auth/AuthReducer'
-
-const composeEnhancers = (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-const store = createStore(combineReducers({auth: authReducer}), composeEnhancers(applyMiddleware(thunk)));
+import VirementList from './virement/VirementList';
+import * as actions from './auth/AuthAction'
 
 function App() {
+    const dispatch = useDispatch();
+    useEffect(() => {
+        dispatch(actions.authCheckState())
+    }, [])
     return (
-        <Provider store={store}>
-            <BrowserRouter>
-                <Header/>
-                <Container>
-                    <Switch>
-                        <Route path='/auth'
-                               activeClassName="active" component={Auth}/>
-                        <Route path='/ajouter-virement' component={AjouterVirment}/>
-                        <Route path='/verification' component={SignerVirement}/>
-                        <Route path='/success' component={SignSuccess}/>
-                        <Route path='/list-virements' component={virementList}/>
-                        <Redirect to='/list-virements'/>
-                    </Switch>
-                </Container>
-            </BrowserRouter>
 
-        </Provider>
+        <BrowserRouter>
+            <Header/>
+            <Container>
+                <Switch>
+                    <Route path='/auth'
+                           activeClassName="active" component={Auth}/>
+                    <Route path='/ajouter-virement' component={AjouterVirment}/>
+                    <Route path='/verification' component={SignerVirement}/>
+                    <Route path='/success' component={SignSuccess}/>
+                    <Route path='/list-virements' component={VirementList}/>
+                    <Redirect to='/list-virements'/>
+                </Switch>
+            </Container>
+        </BrowserRouter>
     );
 }
 

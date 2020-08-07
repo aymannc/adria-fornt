@@ -2,7 +2,7 @@ import React, {ChangeEvent, Fragment, useEffect, useState} from 'react';
 import {Alert, Button, Col, Form, FormControl, InputGroup, Row, Table} from "react-bootstrap";
 import {useForm} from "react-hook-form";
 
-import http from '../app/client'
+import http from '../app/Client'
 import {Redirect, useHistory, useLocation} from "react-router-dom";
 import {useSelector} from "react-redux";
 import {GlobalState} from "../shared/types";
@@ -40,7 +40,7 @@ export const ListBeneficiaires = (props: { beneficiaires: Beneficiaire[], addBen
             </thead>
             <tbody>
             {
-                props.beneficiaires?.map(beneficiaire => {
+                props.beneficiaires?.length ? props.beneficiaires?.map(beneficiaire => {
                     return (
                         <tr key={beneficiaire.id}>
                             <td>{beneficiaire.id}</td>
@@ -50,7 +50,9 @@ export const ListBeneficiaires = (props: { beneficiaires: Beneficiaire[], addBen
                                         onClick={() => props.addBeneficiaire(beneficiaire)}>+</Button>
                             </td>
                         </tr>)
-                })
+                }) : <tr>
+                    <td colSpan={3}>Vous n'avez aucun bénéficiaire</td>
+                </tr>
             }
 
             </tbody>
@@ -72,7 +74,7 @@ export const BeneficiairesVirement = (props: { selectedBeneficiaire: SelectedBen
         </thead>
         <tbody>
         {
-            props.selectedBeneficiaire.map(beneficiaire => {
+            props.selectedBeneficiaire?.length ? props.selectedBeneficiaire.map(beneficiaire => {
                 return (
                     <tr key={beneficiaire.id}>
                         <td>{beneficiaire.id}</td>
@@ -92,7 +94,9 @@ export const BeneficiairesVirement = (props: { selectedBeneficiaire: SelectedBen
                                     onClick={() => props.removeBeneficiaire(beneficiaire.id)}>-</Button>
                         </td>
                     </tr>)
-            })
+            }) : <tr>
+                <td colSpan={4}>Veuillez sélectionner un bénéficiaire</td>
+            </tr>
         }
         </tbody>
     </Table>
