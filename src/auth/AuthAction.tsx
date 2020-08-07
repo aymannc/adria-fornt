@@ -1,8 +1,9 @@
 import * as authActions from './AuthActionTypes';
 import {AxiosError} from "axios";
-import http from "../client";
+import http from "../app/client";
 import {Action, AuthResults, IAuthData} from "../shared/types";
 import {parseJwt} from "../shared/utilityFunctions";
+import {Dispatch} from "redux";
 
 export const authStart = () => {
     return {
@@ -18,7 +19,18 @@ export const authSuccess = (data: AuthResults): Action<string, AuthResults> => {
 export const authFail = (error: AxiosError) => {
     return {
         type: authActions.AUTH_FAIL,
-        payload: error
+        payload: error.message
+    }
+}
+export const logOut = () => {
+    return {type: authActions.AUTH_LOGOUT};
+}
+export const checkAuthTimeOut = (timeOut: number) => {
+    console.log(timeOut, new Date().getTime() / 1000, (timeOut - new Date().getTime()) / 1000)
+    return (dispatch: Dispatch) => {
+        setTimeout(() => {
+            dispatch(logOut())
+        }, timeOut * 1000 - new Date().getTime());
     }
 }
 export const auth = (data: IAuthData) => {
@@ -29,9 +41,10 @@ export const auth = (data: IAuthData) => {
                 const jwtData = parseJwt(results.headers.authorization);
                 dispatch(authSuccess({
                     token: results.headers.authorization,
-                    userId: jwtData?.sub ? +jwtData?.sub : -1,
-                    expireDate: jwtData?.exp ? +jwtData?.exp : -1
+                    userId: +jwtData.sub,
+                    expireDate: +jwtData.exp
                 }))
+                dispatch(checkAuthTimeOut(+jwtData.exp))
             }).catch((error) => {
             dispatch(authFail(error))
         })

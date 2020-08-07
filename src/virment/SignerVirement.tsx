@@ -1,9 +1,10 @@
 import React, {Fragment, useState} from "react";
 import {useHistory, useLocation} from "react-router-dom";
-
 import {Alert, Button, Col, Form, ListGroup, Row} from "react-bootstrap";
 import {useForm} from "react-hook-form";
-import http from "../client";
+import http from "../app/client";
+import {useSelector} from "react-redux";
+import {GlobalState} from "../shared/types";
 
 type Overview = {
     id: number,
@@ -20,6 +21,13 @@ type Overview = {
         prenom: string
     }[]
 }
+
+interface ISignForm {
+    virmentID: number,
+    id: number,
+    password: string
+}
+
 export const SignSuccess = () => {
     return <Row>
         <Col className="col-6 mx-auto">
@@ -27,7 +35,13 @@ export const SignSuccess = () => {
         </Col>
     </Row>
 }
+
+
 const SignerVirement = () => {
+    const {userId} = useSelector(
+        (state: GlobalState) => state.auth
+    );
+
     const location = useLocation();
     const history = useHistory();
     // @ts-ignore
@@ -36,10 +50,10 @@ const SignerVirement = () => {
     const [error, editError] = useState('');
 
     const onSubmit = (data: any) => {
-        const form = {
-            "virmentID": state.id,
-            "username": "anc",
-            "password": data.password
+        const form: ISignForm = {
+            virmentID: state.id,
+            id: userId ? userId : -1,
+            password: data.password
         }
         http.post('sign', form).then(response => {
             if (response.data === true) {

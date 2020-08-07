@@ -19,3 +19,15 @@ export interface JWTData {
     roles: string[]
     sub: string
 }
+
+export interface AuthState {
+    token?: string,
+    userId?: number,
+    expireDate?: number,
+    error?: string,
+    loading: boolean,
+}
+
+export interface GlobalState {
+    auth: AuthState,
+}
