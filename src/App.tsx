@@ -8,6 +8,7 @@ import {Container} from "react-bootstrap";
 import Header from "./app/Header";
 import {SignSuccess} from "./virement/SignerVirement";
 import * as actions from './auth/AuthAction'
+import Playground from "./Playground/faceID.playground";
 
 
 const AjouterVirment = React.lazy(() => import('./virement/AjouterVirement'));
@@ -31,6 +32,7 @@ function App() {
                     <Route path='/verification' component={WaitingComponent(SignerVirement)}/>
                     <Route path='/success' component={SignSuccess}/>
                     <Route path='/list-virements' component={WaitingComponent(VirementList)}/>
+                    <Route path='/playground' component={Playground}/>
                     <Redirect to='/list-virements'/>
                 </Switch>
             </Container>
