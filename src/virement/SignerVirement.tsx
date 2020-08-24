@@ -1,10 +1,12 @@
 import React, {Fragment, useState} from "react";
 import {Redirect, useHistory, useLocation} from "react-router-dom";
-import {Alert, Button, Col, Form, ListGroup, Row} from "react-bootstrap";
+import {Alert, Button, Col, Form, ListGroup, Modal, Row, Spinner} from "react-bootstrap";
 import {useForm} from "react-hook-form";
 import http from "../app/Client";
 import {useSelector} from "react-redux";
 import {GlobalState} from "../app/types";
+import {AlertI, Capture, CaptureProps} from "../shared/Capture";
+import {AxiosResponse} from "axios";
 
 type Overview = {
     id: number,
@@ -25,7 +27,8 @@ type Overview = {
 interface ISignForm {
     virmentID: number,
     id: number,
-    password: string
+    password: string,
+    passwordMode: boolean
 }
 
 export const SignSuccess = () => {
@@ -38,6 +41,8 @@ export const SignSuccess = () => {
 
 
 const SignerVirement = () => {
+
+    const [show, setShow] = useState(false);
     const {userId, token} = useSelector(
         (state: GlobalState) => state.auth
     );
@@ -49,21 +54,41 @@ const SignerVirement = () => {
     const {register, errors, handleSubmit} = useForm<any>();
     const [error, editError] = useState('');
 
-    const onSubmit = (data: any) => {
-        const form: ISignForm = {
-            virmentID: state.id,
-            id: userId ? userId : -1,
-            password: data.password
-        }
-        http.post('sign', form, {headers: {'Authorization': token}}).then(response => {
+    let form: ISignForm = {
+        virmentID: state.id,
+        id: userId ? userId : -1,
+        password: '',
+        passwordMode: false
+    }
+    const postData = (form: ISignForm) => http.post('sign', form, {headers: {'Authorization': token}})
+        .then(response => {
             if (response.data === true) {
                 history.push('/success')
             }
         }).catch(errors => {
             editError(errors.response.data.message);
             console.log(errors.response.data.message)
-        })
+        });
+
+    const onSubmit = (data: any) => {
+        postData({...form, password: data?.password})
     };
+    const captureProps: CaptureProps = {
+        backEndUrl: null, onError: null,
+        onSuccess: (response: AxiosResponse, setAlert: Function) => {
+            console.log(response)
+            if (response.data.response) {
+                postData({...form, passwordMode: false})
+            } else if (!response.data.error && !response.data.response) {
+                setAlert((alert: AlertI) => ({
+                    variant: "danger",
+                    message: "The image provided by the webcam did not match any user in the database",
+                    link: response.data?.image_requested_link,
+                    loading: false
+                }))
+            }
+        }
+    }
     return (
         <Fragment>
             {token ? null : <Redirect to="/auth"/>}
@@ -115,13 +140,44 @@ const SignerVirement = () => {
                                         passe</Alert> : null
                             }
                         </Col>
-                    </Col>
-                    <Col className="col-1">
-                        <Button type="submit" variant="success">Signer</Button>
-                    </Col>
-                </Row>
 
+                    </Col>
+                    <Row>
+                        <Col className='col-3'>
+                            <Button type="primary" variant="success">Signer</Button>
+                        </Col>
+                        <Col className='col-3 ml-auto'>
+                            <Button variant="success" disabled={show} onClick={() => setShow(true)}>
+                                {
+                                    show ? <Spinner
+                                        as="span"
+                                        animation="border"
+                                        size="sm"
+                                        role="status"
+                                        aria-hidden="true"
+                                    /> : null
+                                }
+                                {show ? ' Loading...' : 'Sign with FaceID'}
+                            </Button>
+                        </Col>
+                    </Row>
+                </Row>
             </Form>
+            <Modal
+                size="lg"
+                show={show}
+                onHide={() => setShow(false)}
+                aria-labelledby="example-modal-sizes-title-lg"
+            >
+                <Modal.Header closeButton>
+                    <Modal.Title id="example-modal-sizes-title-lg">
+                        Use FaceID
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Capture {...captureProps} />
+                </Modal.Body>
+            </Modal>
         </Fragment>
     )
 }

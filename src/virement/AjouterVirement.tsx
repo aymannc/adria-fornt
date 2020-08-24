@@ -288,6 +288,7 @@ const AjouterVirment = () => {
         let data: any = {...location.state}
 
         http.get('/abonnes/' + userId + '/beneficiaires').then(response => {
+            console.log(response)
             setState(state => (
                 {
                     ...state, beneficiaire: response.data._embedded.beneficiaires.map((e: Beneficiaire) => ({

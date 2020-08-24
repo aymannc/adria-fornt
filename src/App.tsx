@@ -1,4 +1,4 @@
-import React, {Component, Suspense, useEffect} from "react";
+import React, {Suspense, useEffect} from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import {useDispatch} from "react-redux";
 import {BrowserRouter} from "react-router-dom";
@@ -20,7 +20,7 @@ function App() {
     const dispatch = useDispatch();
     useEffect(() => {
         dispatch(actions.authCheckState())
-    }, [])
+    }, [1])
     return (
         <BrowserRouter>
             <Header/>
@@ -40,10 +40,10 @@ function App() {
     )
 }
 
-const WaitingComponent = (Component: any) => {
+const WaitingComponent = (Compopnent_: any) => {
     return (props: any) => (
         <Suspense fallback={<div>Loading...</div>}>
-            <Component {...props} />
+            <Compopnent_ {...props} />
         </Suspense>
     );
 }
